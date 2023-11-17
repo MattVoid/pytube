@@ -28,6 +28,9 @@ class Playlist(Sequence):
 
         self._playlist_id = None
 
+    def __repr__(self):
+        return f'<pytube.contrib.playlist.Playlist object: channelId={self.channel_id}>'
+
     @property
     def playlist_id(self):
         """Get the playlist id.

@@ -40,7 +40,7 @@ class Channel(Playlist):
         self._about_html = None
 
     def __repr__(self):
-        return f'<pytube.Channel object: channelId={self.channel_id}>'
+        return f'<pytube.contrib.channel.Channel object: channelId={self.channel_id}>'
 
     @property
     def channel_name(self):
