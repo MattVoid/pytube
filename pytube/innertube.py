@@ -10,6 +10,7 @@ import os
 import pathlib
 import time
 from urllib import parse
+from enum import Enum
 
 # Local imports
 from pytube import request
@@ -447,7 +448,7 @@ class InnerTube:
         query.update(self.base_params)
         return self._call_api(endpoint, query, self.base_data)
 
-    def search(self, search_query, continuation=None):
+    def search(self, search_query: str, filter: Enum, continuation=None):
         """Make a request to the search endpoint.
 
         :param str search_query:
@@ -458,7 +459,8 @@ class InnerTube:
         """
         endpoint = f'{self.base_url}/search'
         query = {
-            'query': search_query
+            'query': search_query,
+            'sp': filter.value,
         }
         query.update(self.base_params)
         data = {}

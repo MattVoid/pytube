@@ -1,23 +1,31 @@
 """Module for interacting with YouTube search."""
 # Native python imports
 import logging
+from enum import Enum
 
 # Local imports
-from pytube import YouTube
+from pytube import YouTube, Channel
 from pytube.innertube import InnerTube
 
 
 logger = logging.getLogger(__name__)
 
+class SearchFilter(Enum):
+    CHANNEL = 'EgIQAg%3D%3D'
+    PLAYLIST = 'EgIQAw%3D%3D'
+    VIDEO = 'EgIQAQ%3D%3D'
+    MOVIE = 'EgIQBA%3D%3D'
+
 
 class Search:
-    def __init__(self, query):
+    def __init__(self, query: str, search_filter: SearchFilter|None = None):
         """Initialize Search object.
 
         :param str query:
             Search query provided by the user.
         """
         self.query = query
+        self.search_filter = search_filter
         self._innertube_client = InnerTube(client='WEB')
 
         # The first search, without a continuation, is structured differently
@@ -91,11 +99,9 @@ class Search:
 
         # Initial result is handled by try block, continuations by except block
         try:
-            sections = raw_results['contents']['twoColumnSearchResultsRenderer'][
-                'primaryContents']['sectionListRenderer']['contents']
+            sections = raw_results['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer']['contents']
         except KeyError:
-            sections = raw_results['onResponseReceivedCommands'][0][
-                'appendContinuationItemsAction']['continuationItems']
+            sections = raw_results['onResponseReceivedCommands'][0]['appendContinuationItemsAction']['continuationItems']
         item_renderer = None
         continuation_renderer = None
         for s in sections:
@@ -106,14 +112,13 @@ class Search:
 
         # If the continuationItemRenderer doesn't exist, assume no further results
         if continuation_renderer:
-            next_continuation = continuation_renderer['continuationEndpoint'][
-                'continuationCommand']['token']
+            next_continuation = continuation_renderer['continuationEndpoint']['continuationCommand']['token']
         else:
             next_continuation = None
 
         # If the itemSectionRenderer doesn't exist, assume no results.
         if item_renderer:
-            videos = []
+            results = []
             raw_video_list = item_renderer['contents']
             for video_details in raw_video_list:
                 # Skip over ads
@@ -135,6 +140,11 @@ class Search:
 
                 # Skip channel results
                 if 'channelRenderer' in video_details:
+                    renderer = video_details['channelRenderer']
+                    canonical_base_url = renderer["navigationEndpoint"]["commandMetadata"]["webCommandMetadata"]["url"]
+                    channel_url = f"https://www.youtube.com/user/{canonical_base_url[2:]}"
+                    channel = Channel(channel_url)
+                    results.append(channel)
                     continue
 
                 # Skip 'people also searched for' results
@@ -204,11 +214,11 @@ class Search:
                 vid = YouTube(vid_metadata['url'])
                 vid.author = vid_metadata['channel_name']
                 vid.title = vid_metadata['title']
-                videos.append(vid)
+                results.append(vid)
         else:
-            videos = None
+            results = None
 
-        return videos, next_continuation
+        return results, next_continuation
 
     def fetch_query(self, continuation=None):
         """Fetch raw results from the innertube API.
@@ -219,7 +229,7 @@ class Search:
         :returns:
             The raw json object returned by the innertube API.
         """
-        query_results = self._innertube_client.search(self.query, continuation)
+        query_results = self._innertube_client.search(self.query, self.search_filter, continuation)
         if not self._initial_results:
             self._initial_results = query_results
         return query_results  # noqa:R504

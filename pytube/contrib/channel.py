@@ -39,6 +39,9 @@ class Channel(Playlist):
         self._featured_channels_html = None
         self._about_html = None
 
+    def __repr__(self):
+        return f'<pytube.Channel object: channelId={self.channel_id}>'
+
     @property
     def channel_name(self):
         """Get the name of the YouTube channel.
