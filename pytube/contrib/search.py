@@ -88,52 +88,56 @@ class Search:
         # Extract relevant video information from the details.
         # Some of this can be used to pre-populate attributes of the
         #  YouTube object.
-        vid_renderer = video_details['videoRenderer']
-        vid_id = vid_renderer['videoId']
-        vid_url = f'https://www.youtube.com/watch?v={vid_id}'
-        vid_title = vid_renderer['title']['runs'][0]['text']
-        vid_channel_name = vid_renderer['ownerText']['runs'][0]['text']
-        vid_channel_uri = vid_renderer['ownerText']['runs'][0]['navigationEndpoint']['commandMetadata']['webCommandMetadata']['url']
+        renderer = video_details['videoRenderer']
+        id = renderer['videoId']
+        url = f'https://www.youtube.com/watch?v={id}'
+        title = renderer['title']['runs'][0]['text']
+        channel_name = renderer['ownerText']['runs'][0]['text']
+        channel_uri = renderer['ownerText']['runs'][0]['navigationEndpoint']['commandMetadata']['webCommandMetadata']['url']
         # Livestreams have "runs", non-livestreams have "simpleText",
         #  and scheduled releases do not have 'viewCountText'
-        if 'viewCountText' in vid_renderer:
-            if 'runs' in vid_renderer['viewCountText']:
-                vid_view_count_text = vid_renderer['viewCountText']['runs'][0]['text']
+        if 'viewCountText' in renderer:
+            if 'runs' in renderer['viewCountText']:
+                view_count_text = renderer['viewCountText']['runs'][0]['text']
             else:
-                vid_view_count_text = vid_renderer['viewCountText']['simpleText']
+                view_count_text = renderer['viewCountText']['simpleText']
             # Strip ' views' text, then remove commas
-            stripped_text = vid_view_count_text.split()[0].replace(',','')
+            stripped_text = view_count_text.split()[0].replace(',','')
             if stripped_text == 'No':
-                vid_view_count = 0
+                view_count = 0
             else:
-                vid_view_count = int(stripped_text)
+                view_count = int(stripped_text)
         else:
-            vid_view_count = 0
-        if 'lengthText' in vid_renderer:
-            vid_length = vid_renderer['lengthText']['simpleText']
+            view_count = 0
+            
+        if 'lengthText' in renderer:
+            length = renderer['lengthText']['simpleText']
         else:
-            vid_length = None
+            length = None
 
-        vid_metadata = {
-            'id': vid_id,
-            'url': vid_url,
-            'title': vid_title,
-            'channel_name': vid_channel_name,
-            'channel_url': vid_channel_uri,
-            'view_count': vid_view_count,
-            'length': vid_length
+        metadata = {
+            'id': id,
+            'url': url,
+            'title': title,
+            'channel_name': channel_name,
+            'channel_url': channel_uri,
+            'view_count': view_count,
+            'length': length
         }
 
         # Construct YouTube object from metadata and append to results
-        vid = YouTube(vid_metadata['url'])
-        vid.author = vid_metadata['channel_name']
-        vid.title = vid_metadata['title']
+        video = YouTube(metadata['url'])
+        video.author = metadata['channel_name']
+        video.title = metadata['title']
+
+        return video
 
     def _parse_channel(self, channel_details):
         renderer = channel_details['channelRenderer']
         canonical_base_url = renderer["navigationEndpoint"]["commandMetadata"]["webCommandMetadata"]["url"]
         channel_url = f"https://www.youtube.com/user/{canonical_base_url[2:]}"
-        channel = Channel(channel_url)
+        
+        return Channel(channel_url)
 
     def fetch_and_parse(self, continuation=None):
         """Fetch from the innertube API and parse the results.
@@ -167,8 +171,6 @@ class Search:
         else:
             next_continuation = None
 
-        results = None
-
         # If the itemSectionRenderer doesn't exist, assume no results.
         if item_renderer:
 
@@ -176,7 +178,7 @@ class Search:
             contents = item_renderer['contents']
 
             for details in contents:
-                
+
                 # Skip over ads
                 if details.get('searchPyvRenderer', {}).get('ads', None):
                     continue
@@ -226,6 +228,8 @@ class Search:
                     'https://github.com/pytube/pytube/issues '
                     'and provide this log output.'
                 )
+        else:
+            results = None
 
         return results, next_continuation
 
