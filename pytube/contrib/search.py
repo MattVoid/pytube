@@ -109,7 +109,7 @@ class Search:
                 view_count = int(stripped_text)
         else:
             view_count = 0
-            
+
         if 'lengthText' in renderer:
             length = renderer['lengthText']['simpleText']
         else:
@@ -171,6 +171,8 @@ class Search:
         else:
             next_continuation = None
 
+        results = None
+
         # If the itemSectionRenderer doesn't exist, assume no results.
         if item_renderer:
 
@@ -185,51 +187,49 @@ class Search:
 
                 # Skip "recommended" type videos e.g. "people also watched" and "popular X"
                 #  that break up the search results
-                if 'shelfRenderer' in details:
+                elif 'shelfRenderer' in details:
                     continue
 
                 # Skip auto-generated "mix" playlist results
-                if 'radioRenderer' in details:
+                elif 'radioRenderer' in details:
                     continue
 
                 # Skip playlist results
-                if 'playlistRenderer' in details:
+                elif 'playlistRenderer' in details:
                     continue
 
                 # Skip 'people also searched for' results
-                if 'horizontalCardListRenderer' in details:
+                elif 'horizontalCardListRenderer' in details:
                     continue
 
                 # Can't seem to reproduce, probably related to typo fix suggestions
-                if 'didYouMeanRenderer' in details:
+                elif 'didYouMeanRenderer' in details:
                     continue
 
                 # Seems to be the renderer used for the image shown on a no results page
-                if 'backgroundPromoRenderer' in details:
+                elif 'backgroundPromoRenderer' in details:
                     continue
 
                 # Parse video results
-                if 'videoRenderer' in details:
-                    video = self._parse_video(details)
-                    results.append(video)
-                    continue
+                elif 'videoRenderer' in details:
+                    result = self._parse_video(details)
 
                 # Parse channel results
-                if 'channelRenderer' in details:
-                    channel = self._parse_channel(details)
-                    results.append(channel)
-                    continue
+                elif 'channelRenderer' in details:
+                    result = self._parse_channel(details)
+                
+                else:
 
-                logger.warning('Unexpected renderer encountered.')
-                logger.warning(f'Renderer name: {details.keys()}')
-                logger.warning(f'Search term: {self.query}')
-                logger.warning(
-                    'Please open an issue at '
-                    'https://github.com/pytube/pytube/issues '
-                    'and provide this log output.'
-                )
-        else:
-            results = None
+                    logger.warning('Unexpected renderer encountered.')
+                    logger.warning(f'Renderer name: {details.keys()}')
+                    logger.warning(f'Search term: {self.query}')
+                    logger.warning(
+                        'Please open an issue at '
+                        'https://github.com/pytube/pytube/issues '
+                        'and provide this log output.'
+                    )
+
+                results.append(result)
 
         return results, next_continuation
 
