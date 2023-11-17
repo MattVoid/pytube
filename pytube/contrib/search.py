@@ -228,6 +228,7 @@ class Search:
                         'https://github.com/pytube/pytube/issues '
                         'and provide this log output.'
                     )
+                    continue
 
                 results.append(result)
 
