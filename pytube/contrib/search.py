@@ -134,9 +134,9 @@ class Search:
 
     def _parse_channel(self, channel_details):
         renderer = channel_details['channelRenderer']
-        canonical_base_url = renderer["navigationEndpoint"]["commandMetadata"]["webCommandMetadata"]["url"]
-        channel_url = f"https://www.youtube.com/user/{canonical_base_url[2:]}"
-        
+        channel_id = renderer['channelId']
+        channel_url = f"https://www.youtube.com/channel/{channel_id}"
+
         return Channel(channel_url)
 
     def fetch_and_parse(self, continuation=None):

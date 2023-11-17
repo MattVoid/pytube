@@ -460,7 +460,7 @@ class InnerTube:
         endpoint = f'{self.base_url}/search'
         query = {
             'query': search_query,
-            'sp': filter.value,
+            'params': filter.value,
         }
         query.update(self.base_params)
         data = {}

@@ -169,6 +169,7 @@ def channel_name(url: str) -> str:
     """
     patterns = [
         r"(?:\/(c)\/([%\d\w_\-]+)(\/.*)?)",
+        r"(?:\/(@)([%\w\d_\-]+)(\/.*)?)",
         r"(?:\/(channel)\/([%\w\d_\-]+)(\/.*)?)",
         r"(?:\/(u)\/([%\d\w_\-]+)(\/.*)?)",
         r"(?:\/(user)\/([%\w\d_\-]+)(\/.*)?)"
@@ -180,7 +181,13 @@ def channel_name(url: str) -> str:
             logger.debug("finished regex search, matched: %s", pattern)
             uri_style = function_match.group(1)
             uri_identifier = function_match.group(2)
-            return f'/{uri_style}/{uri_identifier}'
+
+            separator = "/"
+
+            if uri_style == "@":
+                separator = ""
+
+            return f'/{uri_style}{separator}{uri_identifier}'
 
     raise RegexMatchError(
         caller="channel_name", pattern="patterns"
