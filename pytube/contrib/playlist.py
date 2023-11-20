@@ -209,37 +209,27 @@ class Playlist(Sequence):
         try:
             # this is the json tree structure, if the json was extracted from
             # html
-            section_contents = initial_data["contents"][
-                "twoColumnBrowseResultsRenderer"][
-                "tabs"][0]["tabRenderer"]["content"][
-                "sectionListRenderer"]["contents"]
+            section_contents = initial_data["contents"]["twoColumnBrowseResultsRenderer"]["tabs"][0]["tabRenderer"]["content"]["sectionListRenderer"]["contents"]
             try:
                 # Playlist without submenus
-                important_content = section_contents[
-                    0]["itemSectionRenderer"][
-                    "contents"][0]["playlistVideoListRenderer"]
+                important_content = section_contents[0]["itemSectionRenderer"]["contents"][0]["playlistVideoListRenderer"]
             except (KeyError, IndexError, TypeError):
                 # Playlist with submenus
-                important_content = section_contents[
-                    1]["itemSectionRenderer"][
-                    "contents"][0]["playlistVideoListRenderer"]
+                important_content = section_contents[1]["itemSectionRenderer"]["contents"][0]["playlistVideoListRenderer"]
             videos = important_content["contents"]
         except (KeyError, IndexError, TypeError):
             try:
                 # this is the json tree structure, if the json was directly sent
                 # by the server in a continuation response
                 # no longer a list and no longer has the "response" key
-                important_content = initial_data['onResponseReceivedActions'][0][
-                    'appendContinuationItemsAction']['continuationItems']
+                important_content = initial_data['onResponseReceivedActions'][0]['appendContinuationItemsAction']['continuationItems']
                 videos = important_content
             except (KeyError, IndexError, TypeError) as p:
                 logger.info(p)
                 return [], None
 
         try:
-            continuation = videos[-1]['continuationItemRenderer'][
-                'continuationEndpoint'
-            ]['continuationCommand']['token']
+            continuation = videos[-1]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
             videos = videos[:-1]
         except (KeyError, IndexError):
             # if there is an error, no continuation is available

@@ -151,36 +151,26 @@ class Channel(Playlist):
         # this is the json tree structure, if the json was extracted from
         # html
         try:
-            videos = initial_data["contents"][
-                "twoColumnBrowseResultsRenderer"][
-                "tabs"][1]["tabRenderer"]["content"][
-                "sectionListRenderer"]["contents"][0][
-                "itemSectionRenderer"]["contents"][0][
-                "gridRenderer"]["items"]
+            videos = initial_data["contents"]["twoColumnBrowseResultsRenderer"]["tabs"][1]["tabRenderer"]["content"]["richGridRenderer"]["contents"]
         except (KeyError, IndexError, TypeError):
             try:
                 # this is the json tree structure, if the json was directly sent
                 # by the server in a continuation response
-                important_content = initial_data[1]['response']['onResponseReceivedActions'][
-                    0
-                ]['appendContinuationItemsAction']['continuationItems']
+                important_content = initial_data[1]['response']['onResponseReceivedActions'][0]['appendContinuationItemsAction']['continuationItems']
                 videos = important_content
             except (KeyError, IndexError, TypeError):
                 try:
                     # this is the json tree structure, if the json was directly sent
                     # by the server in a continuation response
                     # no longer a list and no longer has the "response" key
-                    important_content = initial_data['onResponseReceivedActions'][0][
-                        'appendContinuationItemsAction']['continuationItems']
+                    important_content = initial_data['onResponseReceivedActions'][0]['appendContinuationItemsAction']['continuationItems']
                     videos = important_content
                 except (KeyError, IndexError, TypeError) as p:
                     logger.info(p)
                     return [], None
 
         try:
-            continuation = videos[-1]['continuationItemRenderer'][
-                'continuationEndpoint'
-            ]['continuationCommand']['token']
+            continuation = videos[-1]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
             videos = videos[:-1]
         except (KeyError, IndexError):
             # if there is an error, no continuation is available
@@ -194,7 +184,7 @@ class Channel(Playlist):
                     map(
                         lambda x: (
                             f"/watch?v="
-                            f"{x['gridVideoRenderer']['videoId']}"
+                            f"{x['richItemRenderer']['content']['videoRenderer']['videoId']}"
                         ),
                         videos
                     )
