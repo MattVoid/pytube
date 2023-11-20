@@ -78,7 +78,7 @@ class Channel(Playlist):
         """
         if self._html:
             return self._html
-        self._html = request.get(self.channel_url)
+        self._html = request.get(self.videos_url)
         return self._html
 
     @property
