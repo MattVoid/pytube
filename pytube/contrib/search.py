@@ -10,22 +10,22 @@ from pytube.innertube import InnerTube
 
 logger = logging.getLogger(__name__)
 
-class SearchFilter(Enum):
-    CHANNEL = 'EgIQAg%3D%3D'
-    PLAYLIST = 'EgIQAw%3D%3D'
-    VIDEO = 'EgIQAQ%3D%3D'
-    MOVIE = 'EgIQBA%3D%3D'
+class Params(Enum):
+    FILTER_CHANNEL = 'EgIQAg%3D%3D'
+    FILTER_PLAYLIST = 'EgIQAw%3D%3D'
+    FILTER_VIDEO = 'EgIQAQ%3D%3D'
+    FILTER_MOVIE = 'EgIQBA%3D%3D'
 
 
 class Search:
-    def __init__(self, query: str, search_filter: SearchFilter|None = None):
+    def __init__(self, query: str, param: Params|None = None):
         """Initialize Search object.
 
         :param str query:
             Search query provided by the user.
         """
         self.query = query
-        self.search_filter = search_filter
+        self.param = param
         self._innertube_client = InnerTube(client='WEB')
 
         # The first search, without a continuation, is structured differently
@@ -243,7 +243,7 @@ class Search:
         :returns:
             The raw json object returned by the innertube API.
         """
-        query_results = self._innertube_client.search(self.query, self.search_filter, continuation)
+        query_results = self._innertube_client.search(self.query, self.param, continuation)
         if not self._initial_results:
             self._initial_results = query_results
         return query_results  # noqa:R504
