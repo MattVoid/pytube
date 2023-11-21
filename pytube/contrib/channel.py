@@ -137,6 +137,14 @@ class Channel(Playlist):
             self._about_html = request.get(self.about_url)
             return self._about_html
 
+    @property
+    def thumbnail_url(self):
+        return self.initial_data['metadata']['channelMetadataRenderer']['avatar']['thumbnails'][0]['url']
+
+    @property
+    def description(self) -> str:
+        return self.initial_data['metadata']['channelMetadataRenderer']['description']
+
     @staticmethod
     def _extract_videos(raw_json: str) -> Tuple[List[str], Optional[str]]:
         """Extracts videos from a raw json page
