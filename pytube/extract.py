@@ -564,10 +564,9 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
 
     :rtype: YouTubeMetadata
     """
+    # TODO: update with request to "https://www.youtube.com/youtubei/v1/updated_metadata"
     try:
-        metadata_rows: List = initial_data["contents"]["twoColumnWatchNextResults"][
-            "results"]["results"]["contents"][1]["videoSecondaryInfoRenderer"][
-            "metadataRowContainer"]["metadataRowContainerRenderer"]["rows"]
+        metadata_rows: List = initial_data["contents"]["twoColumnWatchNextResults"]["results"]["results"]["contents"][1]["videoSecondaryInfoRenderer"]["metadataRowContainer"]["metadataRowContainerRenderer"]["rows"]
     except (KeyError, IndexError):
         # If there's an exception accessing this data, it probably doesn't exist.
         return YouTubeMetadata([])
