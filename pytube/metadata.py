@@ -1,40 +1,35 @@
 """This module contains the YouTubeMetadata class."""
 import json
-from typing import Dict, List, Optional
-
+from typing import Dict, Optional
 
 class YouTubeMetadata:
-    def __init__(self, metadata: List):
-        self._raw_metadata: List = metadata
-        self._metadata = [{}]
+    def __init__(self, metadata: dict):
+        self._raw_metadata = metadata
+        self._metadata = {}
 
-        for el in metadata:
-            # We only add metadata to the dict if it has a simpleText title.
-            if 'title' in el and 'simpleText' in el['title']:
-                metadata_title = el['title']['simpleText']
-            else:
-                continue
+        self.__parse_metadata(metadata)
 
-            contents = el['contents'][0]
-            if 'simpleText' in contents:
-                self._metadata[-1][metadata_title] = contents['simpleText']
-            elif 'runs' in contents:
-                self._metadata[-1][metadata_title] = contents['runs'][0]['text']
+    def __parse_metadata(self, metadata: dict):
+        """Parse the metadata into a list of dicts."""
 
-            # Upon reaching a dividing line, create a new grouping
-            if el.get('hasDividerLine', False):
-                self._metadata.append({})
+        actions = metadata.get('actions', [])
 
-        # If we happen to create an empty dict at the end, drop it
-        if self._metadata[-1] == {}:
-            self._metadata = self._metadata[:-1]
+        for action in actions:
+            
+            if "updateViewershipAction" in action:
+                self._metadata['viewCount'] = action['updateViewershipAction']['viewCount']['videoViewCountRenderer']['originalViewCount']
+
+            if "updateTitleAction" in action:
+                self._metadata['title'] = action['updateTitleAction']['title']['runs'][0]['text']
+
+            if "updateDateAction" in action:
+                self._metadata['relativeDate'] = action['updateDateAction']['dateText']['simpleText']
+
+            if "updateDescriptionAction" in action:
+                self._metadata['description'] = "".join(list(map(lambda run: run["text"], action['updateDescriptionAction']['description']['runs'])))
 
     def __getitem__(self, key):
         return self._metadata[key]
-
-    def __iter__(self):
-        for el in self._metadata:
-            yield el
 
     def __str__(self):
         return json.dumps(self._metadata)
@@ -46,3 +41,6 @@ class YouTubeMetadata:
     @property
     def metadata(self):
         return self._metadata
+    
+    def get(self, key, default = None):
+        return self._metadata.get(key, default)

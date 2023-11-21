@@ -507,3 +507,16 @@ class InnerTube:
         query.update(self.base_params)
         result = self._call_api(endpoint, query, self.base_data)
         return result
+
+    def updated_metadata(self, video_id: str):
+        """Make a request to the updated_metadata endpoint.
+
+        This is likely related to captioning for videos, but is currently untested.
+        """
+        endpoint = f'{self.base_url}/updated_metadata'
+        data = {
+            'videoId': video_id,
+        }
+        data.update(self.base_data)
+        result = self._call_api(endpoint, self.base_params, data)
+        return result

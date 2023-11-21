@@ -84,6 +84,7 @@ class YouTube:
         self._author = None
         self._title = None
         self._publish_date = None
+        self._description = None
 
         self.use_oauth = use_oauth
         self.allow_oauth_cache = allow_oauth_cache
@@ -358,12 +359,16 @@ class YouTube:
         self._title = value
 
     @property
-    def description(self) -> str:
+    def description(self) -> str|None:
         """Get the video description.
 
         :rtype: str
         """
-        return self.vid_info.get("videoDetails", {}).get("shortDescription")
+
+        if self._description is None:
+            self._description = self.metadata.get("description", None)
+        
+        return self._description
 
     @property
     def rating(self) -> float:
@@ -432,16 +437,20 @@ class YouTube:
         return f'https://www.youtube.com/channel/{self.channel_id}'
 
     @property
-    def metadata(self) -> Optional[YouTubeMetadata]:
+    def metadata(self) -> YouTubeMetadata:
         """Get the metadata for the video.
 
         :rtype: YouTubeMetadata
         """
         if self._metadata:
             return self._metadata
-        else:
-            self._metadata = extract.metadata(self.initial_data)
-            return self._metadata
+
+        innertube = InnerTube(client="WEB", use_oauth=self.use_oauth, allow_cache=self.allow_oauth_cache)
+
+        innertube_response = innertube.updated_metadata(self.video_id)
+        self._metadata = innertube_response
+
+        return YouTubeMetadata(self._metadata)
 
     def register_on_progress_callback(self, func: Callable[[Any, bytes, int], None]):
         """Register a download progress callback function post initialization.
